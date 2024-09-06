@@ -1,0 +1,7 @@
+#center-tab-pane {
+    -fx-padding: 5px;
+}
+
+.table-view .column-header .label {
+    -fx-alignment: center;
+}

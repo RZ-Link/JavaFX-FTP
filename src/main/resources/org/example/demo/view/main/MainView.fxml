@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import java.net.URL?>
+<BorderPane fx:id="borderPane"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.demo.view.main.MainView">
+    <left>
+    </left>
+    <center>
+    </center>
+    <top>
+        <HBox alignment="CENTER_RIGHT" spacing="5" id="top-h-box">
+            <padding>
+                <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+            </padding>
+            <Button text="退出">
+                <graphic>
+                    <FontIcon iconLiteral="fth-log-out"/>
+                </graphic>
+            </Button>
+        </HBox>
+    </top>
+    <stylesheets>
+        <URL value="@../../css/MainView.css"/>
+    </stylesheets>
+</BorderPane>
+

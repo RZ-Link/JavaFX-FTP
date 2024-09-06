@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import org.example.demo.component.FXPagination?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.demo.view.module2.PaginationView"
+      fx:id="vbox"
+      alignment="CENTER"
+      spacing="5">
+    <FXPagination fx:id="fxPagination"/>
+</VBox>
