@@ -7,8 +7,8 @@ import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.example.demo.view.window.WindowView;
-import org.example.demo.view.window.WindowViewModel;
+import org.example.demo.view.ftp.FTPView;
+import org.example.demo.view.ftp.FTPViewModel;
 
 public class DemoApplication extends Application {
 
@@ -24,9 +24,9 @@ public class DemoApplication extends Application {
         // 线程未捕获异常处理，对话框提示
         Thread.currentThread().setUncaughtExceptionHandler(new DefaultExceptionHandler());
         // 启动窗口
-        final ViewTuple<WindowView, WindowViewModel> viewTuple = FluentViewLoader.fxmlView(WindowView.class).load();
+        final ViewTuple<FTPView, FTPViewModel> viewTuple = FluentViewLoader.fxmlView(FTPView.class).load();
         final Parent root = viewTuple.getView();
-        Scene scene = new Scene(root, 640, 480);
+        Scene scene = new Scene(root, 1280, 720);
         stage.setTitle("Demo Application");
         stage.setScene(scene);
         stage.show();
