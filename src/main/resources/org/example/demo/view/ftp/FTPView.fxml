@@ -6,12 +6,34 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.demo.view.ftp.FTPView">
     <top>
-        <HBox>
-            
+        <HBox alignment="CENTER_LEFT" spacing="2">
+            <HBox alignment="CENTER_LEFT" spacing="2">
+                <Label text="主机:"/>
+                <TextField/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="2">
+                <Label text="用户名:"/>
+                <TextField/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="2">
+                <Label text="密码:"/>
+                <TextField/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="2">
+                <Label text="端口:"/>
+                <TextField/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="2">
+                <Button text="连接"/>
+            </HBox>
+            <padding>
+                <Insets top="5" right="5" bottom="5" left="5"/>
+            </padding>
         </HBox>
     </top>
 </BorderPane>
