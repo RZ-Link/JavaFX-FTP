@@ -68,7 +68,7 @@ public class MessageUtils {
             // 垂直偏移
             synchronized (MessageUtils.class) {
                 if (stack.isEmpty()) {
-                    popup.setY(DemoApplication.stage.getY() + 5);
+                    popup.setY(DemoApplication.stage.getY() + 100);
                 } else {
                     var previousPopup = stack.get(stack.size() - 1);
                     popup.setY(previousPopup.getY() + previousPopup.getHeight() + 5);
