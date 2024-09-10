@@ -16,6 +16,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.saxsys</groupId>
             <artifactId>mvvmfx</artifactId>
             <version>1.8.0</version>
