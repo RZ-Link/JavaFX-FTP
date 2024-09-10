@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.VBox;
 import org.example.demo.component.FXPagination;
-import org.example.demo.component.NewFXPagination;
 
 import java.net.URL;
 import java.util.ArrayList;
