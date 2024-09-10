@@ -94,6 +94,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             for (File file : FileUtil.getUserHomeDir().listFiles()) {
                 FileVO fileVO = new FileVO();
                 fileVO.setFileName(file.getName());
+                fileVO.setFilePath(file.getPath());
                 if (!file.isDirectory()) {
                     fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
                 }
