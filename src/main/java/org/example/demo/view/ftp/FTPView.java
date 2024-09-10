@@ -6,13 +6,11 @@ import de.saxsys.mvvmfx.FxmlView;
 import javafx.collections.FXCollections;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.io.FileUtils;
@@ -21,10 +19,7 @@ import org.example.demo.DemoApplication;
 import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public VBox localBox;
@@ -40,9 +35,38 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     }
 
     public void initializeLocal() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         localBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5));
         localFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
+
+        localFileListTableView.setRowFactory(tableView -> {
+            TableRow<FileVO> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (Objects.equals(event.getButton(), MouseButton.PRIMARY) && event.getClickCount() == 2) {
+                    if (row.getItem() != null && row.getItem().getIsDirectory()) {
+                        List<FileVO> fileVOList = new ArrayList<>();
+                        File directory = FileUtil.file(row.getItem().getFilePath());
+                        File[] files = directory.listFiles();
+                        if (files != null) {
+                            for (File file : files) {
+                                FileVO fileVO = new FileVO();
+                                fileVO.setFileName(file.getName());
+                                fileVO.setFilePath(file.getPath());
+                                if (!file.isDirectory()) {
+                                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
+                                }
+                                fileVO.setFileLastModifiedTime(sdf.format(new Date(file.lastModified())));
+                                fileVO.setIsDirectory(file.isDirectory());
+                                fileVOList.add(fileVO);
+                            }
+                        }
+                        localFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+                    }
+                }
+            });
+            return row;
+        });
 
         localFileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
         localFileNameColumn.setCellFactory(column -> {
@@ -89,7 +113,6 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         localFileLastModifiedTimeColumn.setCellValueFactory(new PropertyValueFactory<>("fileLastModifiedTime"));
 
         List<FileVO> fileVOList = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             for (File file : FileUtil.getUserHomeDir().listFiles()) {
                 FileVO fileVO = new FileVO();
