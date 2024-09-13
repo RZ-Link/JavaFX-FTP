@@ -29,15 +29,23 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public TableColumn<FileVO, String> localFileSizeColumn;
     public TableColumn<FileVO, String> localFileLastModifiedTimeColumn;
 
+    public VBox remoteBox;
+    public HBox remoteFileListBox;
+    public TableView<FileVO> remoteFileListTableView;
+    public TableColumn<FileVO, String> remoteFileNameColumn;
+    public TableColumn<FileVO, String> remoteFileSizeColumn;
+    public TableColumn<FileVO, String> remoteFileLastModifiedTimeColumn;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeLocal();
+        initializeRemote();
     }
 
     public void initializeLocal() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        localBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5));
+        localBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5).subtract(10));
         localFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
 
         localFileListTableView.setRowFactory(tableView -> {
@@ -130,6 +138,14 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         }
 
         localFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+
+    }
+
+    public void initializeRemote() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        remoteBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5).subtract(10));
+        remoteFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
 
     }
 }
