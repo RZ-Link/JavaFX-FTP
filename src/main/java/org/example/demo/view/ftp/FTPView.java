@@ -4,6 +4,8 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import de.saxsys.mvvmfx.FxmlView;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -15,9 +17,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.example.demo.DemoApplication;
+import org.example.demo.view.feedback.MessageUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -25,6 +29,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public VBox localBox;
@@ -46,6 +52,16 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public FTPClient ftpClient;
 
     public VBox bottomTabPane;
+    ObservableList<TransferTaskVO> transferTaskQueue;
+    public TableView<TransferTaskVO> transferTaskQueueTableView;
+    public TableColumn<TransferTaskVO, String> fileNameColumn;
+    public TableColumn<TransferTaskVO, String> typeColumn;
+    public TableColumn<TransferTaskVO, Long> progressColumn;
+    public TableColumn<TransferTaskVO, String> fileSizeColumn;
+    public TableColumn<TransferTaskVO, String> localFilePathColumn;
+    public TableColumn<TransferTaskVO, String> remoteFilePathColumn;
+
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -179,6 +195,17 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 MenuItem menuItem3 = new MenuItem("创建目录");
                 menuItem1.setOnAction((event) -> {
                     System.out.println("下载文件" + row.getItem().getFilePath());
+                    if (row.getItem() != null) {
+                        TransferTaskVO transferTaskVO = new TransferTaskVO();
+                        transferTaskVO.setFileName(row.getItem().getFileName());
+                        transferTaskVO.setType(TransferTaskVO.DOWNLOAD);
+                        transferTaskVO.setProgress(0L);
+                        transferTaskVO.setFileSize(row.getItem().getFileSize());
+                        transferTaskVO.setLocalFilePath(Paths.get(localPathLabel.getText(), row.getItem().getFileName()).toString());
+                        transferTaskVO.setRemoteFilePath(row.getItem().getFilePath());
+                        transferTaskVO.setStatus(TransferTaskVO.WAITING);
+                        transferTaskQueue.add(transferTaskVO);
+                    }
                 });
                 menuItem2.setOnAction((event) -> {
                     System.out.println("删除文件" + row.getItem().getFilePath());
@@ -301,6 +328,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             ftpClient = new FTPClient();
             ftpClient.connect("192.168.153.130", 2121);
             ftpClient.login("admin", "admin");
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             ftpClient.enterLocalPassiveMode();
         } catch (Exception e) {
             e.printStackTrace();
@@ -310,6 +338,54 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public void initializeBottom() {
         bottomTabPane.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.35));
         {
+            transferTaskQueue = FXCollections.observableArrayList();
+            transferTaskQueueTableView.setItems(transferTaskQueue);
+
+            fileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+            typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+            progressColumn.setCellValueFactory(new PropertyValueFactory<>("progress"));
+            fileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
+            localFilePathColumn.setCellValueFactory(new PropertyValueFactory<>("localFilePath"));
+            remoteFilePathColumn.setCellValueFactory(new PropertyValueFactory<>("remoteFilePath"));
+
+            transferTaskQueue.addListener((ListChangeListener<TransferTaskVO>) c -> {
+                synchronized (FTPView.class) {
+                    if (!transferTaskQueue.isEmpty()) {
+                        TransferTaskVO transferTaskVO = transferTaskQueue.get(0);
+                        if (Objects.equals(transferTaskVO.getStatus(), TransferTaskVO.WAITING)) {
+                            transferTaskVO.setStatus(TransferTaskVO.RUNNING);
+                            executorService.submit(() -> {
+                                if (Objects.equals(transferTaskVO.getType(), TransferTaskVO.UPLOAD)) {
+
+
+                                } else if (Objects.equals(transferTaskVO.getType(), TransferTaskVO.DOWNLOAD)) {
+                                    var outputStream = FileUtil.getOutputStream(transferTaskVO.getLocalFilePath());
+
+                                    try {
+                                        boolean done = ftpClient.retrieveFile(transferTaskVO.getRemoteFilePath(), outputStream);
+                                        if (done) {
+                                            transferTaskVO.setStatus(TransferTaskVO.SUCCESS);
+                                        } else {
+                                            transferTaskVO.setStatus(TransferTaskVO.FAIL);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        transferTaskVO.setStatus(TransferTaskVO.FAIL);
+                                    }
+
+                                    try {
+                                        outputStream.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                transferTaskQueue.remove(transferTaskVO);
+                            });
+                        }
+                    }
+                }
+            });
 
         }
     }
@@ -380,4 +456,6 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
         remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
     }
+
+
 }
