@@ -26,6 +26,7 @@ import org.example.demo.view.feedback.PromptDialog;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -53,7 +54,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public FTPClient ftpClient;
 
     public VBox bottomTabPane;
-    ObservableList<TransferTaskVO> transferTaskQueue;
+    public ObservableList<TransferTaskVO> transferTaskQueue;
     public TableView<TransferTaskVO> transferTaskQueueTableView;
     public TableColumn<TransferTaskVO, String> fileNameColumn;
     public TableColumn<TransferTaskVO, String> typeColumn;
@@ -113,6 +114,32 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 });
                 menuItem2.setOnAction((event) -> {
                     System.out.println("上传目录" + row.getItem().getFilePath());
+                    List<File> files = FileUtil.loopFiles(row.getItem().getFilePath());
+
+                    String localPrefix = row.getItem().getFilePath();
+                    if (localPrefix.endsWith(File.separator)) {
+                        localPrefix = localPrefix.substring(0, localPrefix.length() - 1);
+                    }
+
+                    String remotePrefix = remotePathLabel.getText();
+                    if (!remotePathLabel.getText().endsWith("/")) {
+                        remotePrefix += "/";
+                    }
+
+                    for (File file : files) {
+                        String remoteFilePath = remotePrefix + row.getItem().getFileName() + file.getAbsolutePath().substring(localPrefix.length()).replace(File.separator, "/");
+
+                        TransferTaskVO transferTaskVO = new TransferTaskVO();
+                        transferTaskVO.setFileName(file.getName());
+                        transferTaskVO.setType(TransferTaskVO.UPLOAD);
+                        transferTaskVO.setProgress(0L);
+                        transferTaskVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
+                        transferTaskVO.setLocalFilePath(file.getAbsolutePath());
+                        transferTaskVO.setRemoteFilePath(remoteFilePath);
+                        transferTaskVO.setStatus(TransferTaskVO.WAITING);
+                        transferTaskQueue.add(transferTaskVO);
+                    }
+
                 });
                 directoryMenu.getItems().addAll(menuItem1, menuItem2);
             }
@@ -424,6 +451,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public void initializeFtpClient() {
         try {
             ftpClient = new FTPClient();
+            ftpClient.setControlEncoding("UTF-8");
             ftpClient.connect("192.168.153.130", 2121);
             ftpClient.login("admin", "admin");
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -457,22 +485,25 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                                     var inputStream = FileUtil.getInputStream(transferTaskVO.getLocalFilePath());
 
                                     try {
-
                                         boolean makeDirectoryDone = true;
-                                        Path remoteFilePath = Paths.get(transferTaskVO.getRemoteFilePath());
-                                        String remoteFileParentPath = remoteFilePath.getParent().toString().replace(File.separator, "/");
-                                        String[] parts = remoteFileParentPath.split("/");
-                                        String path = "";
-                                        for (String part : parts) {
-                                            path += "/" + part;
-                                            if (!ftpClient.changeWorkingDirectory(path)) {
-                                                boolean done = ftpClient.makeDirectory(path);
-                                                if (!done) {
-                                                    makeDirectoryDone = false;
-                                                    break;
+
+                                        synchronized (FTPView.class) {
+                                            Path remoteFilePath = Paths.get(transferTaskVO.getRemoteFilePath());
+                                            String remoteFileParentPath = remoteFilePath.getParent().toString().replace(File.separator, "/");
+                                            String[] parts = remoteFileParentPath.split("/");
+                                            String path = "";
+                                            for (String part : parts) {
+                                                path += "/" + part;
+                                                if (!ftpClient.changeWorkingDirectory(path)) {
+                                                    boolean done = ftpClient.makeDirectory(path);
+                                                    if (!done) {
+                                                        makeDirectoryDone = false;
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
+
 
                                         if (makeDirectoryDone) {
                                             boolean done = ftpClient.storeFile(transferTaskVO.getRemoteFilePath(), inputStream);
@@ -601,41 +632,42 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
 
     public void deleteDirectory(String remoteDirectoryPath) {
+        synchronized (FTPView.class) {
+            try {
+                ftpClient.changeWorkingDirectory("/");
 
-        try {
-            FTPFile[] files = ftpClient.listFiles(remoteDirectoryPath);
+                FTPFile[] files = ftpClient.listFiles(remoteDirectoryPath);
 
+                for (FTPFile file : files) {
 
-            for (FTPFile file : files) {
-
-                String pathName = remoteDirectoryPath;
-                if (pathName.endsWith("/")) {
-                    pathName += file.getName();
-                } else {
-                    pathName += "/" + file.getName();
-                }
-
-                if (file.isDirectory()) {
-                    deleteDirectory(pathName);
-                } else {
-                    boolean done = ftpClient.deleteFile(pathName);
-                    if (done) {
-                        System.out.println("删除文件成功");
+                    String pathName = remoteDirectoryPath;
+                    if (pathName.endsWith("/")) {
+                        pathName += file.getName();
                     } else {
-                        System.out.println("删除文件失败");
+                        pathName += "/" + file.getName();
+                    }
+
+                    if (file.isDirectory()) {
+                        deleteDirectory(pathName);
+                    } else {
+                        boolean done = ftpClient.deleteFile(pathName);
+                        if (done) {
+                            System.out.println("删除文件成功");
+                        } else {
+                            System.out.println("删除文件失败");
+                        }
                     }
                 }
-            }
-            boolean done = ftpClient.removeDirectory(remoteDirectoryPath);
-            if (done) {
-                System.out.println("删除目录成功");
-            } else {
-                System.out.println("删除目录失败");
-            }
+                boolean done = ftpClient.removeDirectory(remoteDirectoryPath);
+                if (done) {
+                    System.out.println("删除目录成功");
+                } else {
+                    System.out.println("删除目录失败");
+                }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
     }
 }
