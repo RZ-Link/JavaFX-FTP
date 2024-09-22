@@ -235,7 +235,12 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 menuItem2.setOnAction((event) -> {
                     System.out.println("删除文件" + row.getItem().getFilePath());
                     try {
-                        ftpClient.deleteFile(row.getItem().getFilePath());
+                        boolean done = ftpClient.deleteFile(row.getItem().getFilePath());
+                        if (done) {
+                            System.out.println("删除文件成功");
+                        } else {
+                            System.out.println("删除文件失败");
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
