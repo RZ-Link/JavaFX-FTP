@@ -277,6 +277,8 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 });
                 menuItem2.setOnAction((event) -> {
                     System.out.println("删除目录" + row.getItem().getFilePath());
+                    deleteDirectory(row.getItem().getFilePath());
+                    refreshRemoteFileList();
                 });
                 menuItem3.setOnAction((event) -> {
                     System.out.println("创建目录");
@@ -593,4 +595,42 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     }
 
 
+    public void deleteDirectory(String remoteDirectoryPath) {
+
+        try {
+            FTPFile[] files = ftpClient.listFiles(remoteDirectoryPath);
+
+
+            for (FTPFile file : files) {
+
+                String pathName = remoteDirectoryPath;
+                if (pathName.endsWith("/")) {
+                    pathName += file.getName();
+                } else {
+                    pathName += "/" + file.getName();
+                }
+
+                if (file.isDirectory()) {
+                    deleteDirectory(pathName);
+                } else {
+                    boolean done = ftpClient.deleteFile(pathName);
+                    if (done) {
+                        System.out.println("删除文件成功");
+                    } else {
+                        System.out.println("删除文件失败");
+                    }
+                }
+            }
+            boolean done = ftpClient.removeDirectory(remoteDirectoryPath);
+            if (done) {
+                System.out.println("删除目录成功");
+            } else {
+                System.out.println("删除目录失败");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 }
