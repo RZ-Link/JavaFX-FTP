@@ -84,6 +84,21 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 MenuItem menuItem1 = new MenuItem("上传文件");
                 menuItem1.setOnAction((event) -> {
                     System.out.println("上传文件" + row.getItem().getFilePath());
+                    if (row.getItem() != null) {
+                        TransferTaskVO transferTaskVO = new TransferTaskVO();
+                        transferTaskVO.setFileName(row.getItem().getFileName());
+                        transferTaskVO.setType(TransferTaskVO.UPLOAD);
+                        transferTaskVO.setProgress(0L);
+                        transferTaskVO.setFileSize(row.getItem().getFileSize());
+                        transferTaskVO.setLocalFilePath(row.getItem().getFilePath());
+                        if (remotePathLabel.getText().endsWith("/")) {
+                            transferTaskVO.setRemoteFilePath(remotePathLabel.getText() + row.getItem().getFileName());
+                        } else {
+                            transferTaskVO.setRemoteFilePath(remotePathLabel.getText() + "/" + row.getItem().getFileName());
+                        }
+                        transferTaskVO.setStatus(TransferTaskVO.WAITING);
+                        transferTaskQueue.add(transferTaskVO);
+                    }
                 });
                 fileMenu.getItems().addAll(menuItem1);
             }
@@ -175,7 +190,12 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         localFileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         localFileLastModifiedTimeColumn.setCellValueFactory(new PropertyValueFactory<>("fileLastModifiedTime"));
 
-        localPathLabel.setText(FileUtil.getUserHomePath());
+        String userHomePath = FileUtil.getUserHomePath();
+        if (userHomePath.endsWith(File.separator)) {
+            localPathLabel.setText(userHomePath.substring(0, userHomePath.length() - 1));
+        } else {
+            localPathLabel.setText(userHomePath);
+        }
 
         refreshLocalFileList();
     }
@@ -201,7 +221,11 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                         transferTaskVO.setType(TransferTaskVO.DOWNLOAD);
                         transferTaskVO.setProgress(0L);
                         transferTaskVO.setFileSize(row.getItem().getFileSize());
-                        transferTaskVO.setLocalFilePath(Paths.get(localPathLabel.getText(), row.getItem().getFileName()).toString());
+                        if (localPathLabel.getText().endsWith(File.separator)) {
+                            transferTaskVO.setLocalFilePath(localPathLabel.getText() + row.getItem().getFileName());
+                        } else {
+                            transferTaskVO.setLocalFilePath(localPathLabel.getText() + File.separator + row.getItem().getFileName());
+                        }
                         transferTaskVO.setRemoteFilePath(row.getItem().getFilePath());
                         transferTaskVO.setStatus(TransferTaskVO.WAITING);
                         transferTaskQueue.add(transferTaskVO);
@@ -356,7 +380,49 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                             transferTaskVO.setStatus(TransferTaskVO.RUNNING);
                             executorService.submit(() -> {
                                 if (Objects.equals(transferTaskVO.getType(), TransferTaskVO.UPLOAD)) {
+                                    var inputStream = FileUtil.getInputStream(transferTaskVO.getLocalFilePath());
 
+                                    try {
+
+                                        boolean makeDirectoryDone = true;
+                                        Path remoteFilePath = Paths.get(transferTaskVO.getRemoteFilePath());
+                                        String remoteFileParentPath = remoteFilePath.getParent().toString().replace(File.separator, "/");
+                                        String[] parts = remoteFileParentPath.split("/");
+                                        String path = "";
+                                        for (String part : parts) {
+                                            path += "/" + part;
+                                            if (!ftpClient.changeWorkingDirectory(path)) {
+                                                boolean done = ftpClient.makeDirectory(path);
+                                                if (!done) {
+                                                    makeDirectoryDone = false;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (makeDirectoryDone) {
+                                            boolean done = ftpClient.storeFile(transferTaskVO.getRemoteFilePath(), inputStream);
+                                            if (done) {
+                                                transferTaskVO.setStatus(TransferTaskVO.SUCCESS);
+                                            } else {
+                                                transferTaskVO.setStatus(TransferTaskVO.FAIL);
+                                            }
+                                        } else {
+                                            transferTaskVO.setStatus(TransferTaskVO.FAIL);
+                                        }
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        transferTaskVO.setStatus(TransferTaskVO.FAIL);
+                                    }
+
+                                    try {
+                                        inputStream.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    refreshRemoteFileList();
 
                                 } else if (Objects.equals(transferTaskVO.getType(), TransferTaskVO.DOWNLOAD)) {
                                     var outputStream = FileUtil.getOutputStream(transferTaskVO.getLocalFilePath());
@@ -378,6 +444,8 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+
+                                    refreshLocalFileList();
                                 }
 
                                 transferTaskQueue.remove(transferTaskVO);
