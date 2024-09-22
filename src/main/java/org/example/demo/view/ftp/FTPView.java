@@ -14,6 +14,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.example.demo.DemoApplication;
 
 import java.io.File;
@@ -24,6 +26,7 @@ import java.util.*;
 public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public VBox localBox;
     public HBox localFileListBox;
+    public Label localPathLabel;
     public TableView<FileVO> localFileListTableView;
     public TableColumn<FileVO, String> localFileNameColumn;
     public TableColumn<FileVO, String> localFileSizeColumn;
@@ -31,13 +34,17 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
     public VBox remoteBox;
     public HBox remoteFileListBox;
+    public Label remotePathLabel;
     public TableView<FileVO> remoteFileListTableView;
     public TableColumn<FileVO, String> remoteFileNameColumn;
     public TableColumn<FileVO, String> remoteFileSizeColumn;
     public TableColumn<FileVO, String> remoteFileLastModifiedTimeColumn;
 
+    public FTPClient ftpClient;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        initializeFtpClient();
         initializeLocal();
         initializeRemote();
     }
@@ -53,6 +60,13 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             row.setOnMouseClicked(event -> {
                 if (Objects.equals(event.getButton(), MouseButton.PRIMARY) && event.getClickCount() == 2) {
                     if (row.getItem() != null && row.getItem().getIsDirectory()) {
+
+                        if (localPathLabel.getText().endsWith(File.separator)) {
+                            localPathLabel.setText(localPathLabel.getText() + row.getItem().getFileName());
+                        } else {
+                            localPathLabel.setText(localPathLabel.getText() + File.separator + row.getItem().getFileName());
+                        }
+
                         List<FileVO> fileVOList = new ArrayList<>();
                         File directory = FileUtil.file(row.getItem().getFilePath());
                         File[] files = directory.listFiles();
@@ -120,9 +134,11 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         localFileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         localFileLastModifiedTimeColumn.setCellValueFactory(new PropertyValueFactory<>("fileLastModifiedTime"));
 
+        localPathLabel.setText(FileUtil.getUserHomePath());
+
         List<FileVO> fileVOList = new ArrayList<>();
         try {
-            for (File file : FileUtil.getUserHomeDir().listFiles()) {
+            for (File file : FileUtil.ls(localPathLabel.getText())) {
                 FileVO fileVO = new FileVO();
                 fileVO.setFileName(file.getName());
                 fileVO.setFilePath(file.getPath());
@@ -147,5 +163,117 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         remoteBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5).subtract(10));
         remoteFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
 
+        remoteFileListTableView.setRowFactory(tableView -> {
+            TableRow<FileVO> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (Objects.equals(event.getButton(), MouseButton.PRIMARY) && event.getClickCount() == 2) {
+                    if (row.getItem() != null && row.getItem().getIsDirectory()) {
+
+                        if (remotePathLabel.getText().endsWith("/")) {
+                            remotePathLabel.setText(remotePathLabel.getText() + row.getItem().getFileName());
+                        } else {
+                            remotePathLabel.setText(remotePathLabel.getText() + "/" + row.getItem().getFileName());
+                        }
+
+                        List<FileVO> fileVOList = new ArrayList<>();
+                        try {
+                            for (FTPFile file : ftpClient.mlistDir(remotePathLabel.getText())) {
+                                FileVO fileVO = new FileVO();
+                                fileVO.setFileName(file.getName());
+                                fileVO.setFilePath(remotePathLabel.getText() + file.getName());
+                                if (!file.isDirectory()) {
+                                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.getSize()));
+                                }
+                                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
+                                fileVO.setIsDirectory(file.isDirectory());
+                                fileVOList.add(fileVO);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+                    }
+                }
+            });
+            return row;
+        });
+
+        remoteFileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        remoteFileNameColumn.setCellFactory(column -> {
+                    return new TableCell<>() {
+                        @Override
+                        protected void updateItem(String item, boolean empty) {
+
+                            super.updateItem(item, empty);
+                            if (empty || item == null || getTableRow() == null || getTableRow().getItem() == null) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+
+                                ImageView imageView = new ImageView();
+                                imageView.setFitWidth(24);
+                                imageView.setFitHeight(24);
+
+                                if (getTableRow().getItem().getIsDirectory()) {
+                                    imageView.setImage(new Image("/org/example/demo/image/places/folder-paleorange.png"));
+                                } else {
+                                    String mimeType = FileUtil.getMimeType(getTableRow().getItem().getFileName());
+                                    if (StrUtil.isBlank(mimeType)) {
+                                        mimeType = "text-plain.png";
+                                    } else {
+                                        mimeType = mimeType.replaceAll("/", "-") + ".png";
+                                    }
+                                    try {
+                                        imageView.setImage(new Image("/org/example/demo/image/mimetypes/" + mimeType));
+                                    } catch (Exception e) {
+                                        imageView.setImage(new Image("/org/example/demo/image/mimetypes/text-plain.png"));
+                                    }
+                                }
+
+                                HBox box = new HBox(imageView, new Label(item));
+                                box.setAlignment(Pos.CENTER_LEFT);
+                                box.setSpacing(5.0);
+                                setGraphic(box);
+                            }
+                        }
+                    };
+                }
+        );
+        remoteFileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
+        remoteFileLastModifiedTimeColumn.setCellValueFactory(new PropertyValueFactory<>("fileLastModifiedTime"));
+
+        remotePathLabel.setText("/");
+
+        List<FileVO> fileVOList = new ArrayList<>();
+        try {
+            for (FTPFile file : ftpClient.mlistDir(remotePathLabel.getText())) {
+                FileVO fileVO = new FileVO();
+                fileVO.setFileName(file.getName());
+                fileVO.setFilePath(remotePathLabel.getText() + file.getName());
+                if (!file.isDirectory()) {
+                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.getSize()));
+                }
+                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
+                fileVO.setIsDirectory(file.isDirectory());
+                fileVOList.add(fileVO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+
+    }
+
+    public void initializeFtpClient() {
+        try {
+            ftpClient = new FTPClient();
+            ftpClient.connect("192.168.153.130", 2121);
+            ftpClient.login("admin", "admin");
+            ftpClient.enterLocalPassiveMode();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

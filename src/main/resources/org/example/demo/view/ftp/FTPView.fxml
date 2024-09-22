@@ -41,6 +41,10 @@
             <padding>
                 <Insets topRightBottomLeft="5"/>
             </padding>
+            <HBox spacing="5">
+                <Label text="本地站点"/>
+                <Label fx:id="localPathLabel"/>
+            </HBox>
             <HBox fx:id="localFileListBox">
                 <TableView fx:id="localFileListTableView" HBox.hgrow="ALWAYS">
                     <columnResizePolicy>
@@ -60,6 +64,10 @@
             <padding>
                 <Insets topRightBottomLeft="5"/>
             </padding>
+            <HBox spacing="5">
+                <Label text="远程站点"/>
+                <Label fx:id="remotePathLabel"/>
+            </HBox>
             <HBox fx:id="remoteFileListBox">
                 <TableView fx:id="remoteFileListTableView" HBox.hgrow="ALWAYS">
                     <columnResizePolicy>
