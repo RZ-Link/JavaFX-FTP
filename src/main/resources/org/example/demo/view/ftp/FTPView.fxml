@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.demo.view.ftp.FTPView">
@@ -37,12 +38,17 @@
         </HBox>
     </top>
     <left>
-        <VBox fx:id="localBox">
+        <VBox fx:id="localBox" spacing="5">
             <padding>
                 <Insets topRightBottomLeft="5"/>
             </padding>
-            <HBox spacing="5">
+            <HBox alignment="CENTER_LEFT" spacing="5">
                 <Label text="本地站点"/>
+                <Button styleClass="small" onAction="#onLocalBackButtonClick">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-arrow-left-circle"/>
+                    </graphic>
+                </Button>
                 <Label fx:id="localPathLabel"/>
             </HBox>
             <HBox fx:id="localFileListBox">
@@ -60,12 +66,17 @@
         </VBox>
     </left>
     <right>
-        <VBox fx:id="remoteBox">
+        <VBox fx:id="remoteBox" spacing="5">
             <padding>
                 <Insets topRightBottomLeft="5"/>
             </padding>
-            <HBox spacing="5">
+            <HBox alignment="CENTER_LEFT" spacing="5">
                 <Label text="远程站点"/>
+                <Button styleClass="small" onAction="#onRemoteBackButtonClick">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-arrow-left-circle"/>
+                    </graphic>
+                </Button>
                 <Label fx:id="remotePathLabel"/>
             </HBox>
             <HBox fx:id="remoteFileListBox">

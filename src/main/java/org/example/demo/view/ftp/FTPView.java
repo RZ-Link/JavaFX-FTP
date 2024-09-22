@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import de.saxsys.mvvmfx.FxmlView;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -20,6 +21,8 @@ import org.example.demo.DemoApplication;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -275,5 +278,21 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void onLocalBackButtonClick(ActionEvent actionEvent) {
+        Path localPath = Paths.get(localPathLabel.getText());
+        if (localPath.getParent() == null) {
+            return;
+        }
+        localPathLabel.setText(localPath.getParent().toString());
+    }
+
+    public void onRemoteBackButtonClick(ActionEvent actionEvent) {
+        Path remotePath = Paths.get(remotePathLabel.getText());
+        if (remotePath.getParent() == null) {
+            return;
+        }
+        remotePathLabel.setText(remotePath.getParent().toString().replace(File.separator, "/"));
     }
 }
