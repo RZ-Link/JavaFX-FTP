@@ -22,6 +22,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.example.demo.DemoApplication;
 import org.example.demo.view.feedback.MessageUtils;
+import org.example.demo.view.feedback.PromptDialog;
 
 import java.io.File;
 import java.net.URL;
@@ -242,6 +243,26 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 });
                 menuItem3.setOnAction((event) -> {
                     System.out.println("创建目录");
+                    PromptDialog.create("创建目录", "目录名", directoryName -> {
+                        try {
+                            String pathName = remotePathLabel.getText();
+                            if (pathName.endsWith("/")) {
+                                pathName += directoryName;
+                            } else {
+                                pathName += "/" + directoryName;
+                            }
+                            boolean done = ftpClient.makeDirectory(pathName);
+                            if (done) {
+                                System.out.println("创建目录成功");
+                            } else {
+                                System.out.println("创建目录失败");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("创建目录失败");
+                        }
+                        refreshRemoteFileList();
+                    });
                 });
                 fileMenu.getItems().addAll(menuItem1, menuItem2, menuItem3);
             }
@@ -259,6 +280,26 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 });
                 menuItem3.setOnAction((event) -> {
                     System.out.println("创建目录");
+                    PromptDialog.create("创建目录", "目录名", directoryName -> {
+                        try {
+                            String pathName = remotePathLabel.getText();
+                            if (pathName.endsWith("/")) {
+                                pathName += directoryName;
+                            } else {
+                                pathName += "/" + directoryName;
+                            }
+                            boolean done = ftpClient.makeDirectory(pathName);
+                            if (done) {
+                                System.out.println("创建目录成功");
+                            } else {
+                                System.out.println("创建目录失败");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("创建目录失败");
+                        }
+                        refreshRemoteFileList();
+                    });
                 });
                 directoryMenu.getItems().addAll(menuItem1, menuItem2, menuItem3);
             }
@@ -268,6 +309,26 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                 MenuItem menuItem1 = new MenuItem("创建目录");
                 menuItem1.setOnAction((event) -> {
                     System.out.println("创建目录");
+                    PromptDialog.create("创建目录", "目录名", directoryName -> {
+                        try {
+                            String pathName = remotePathLabel.getText();
+                            if (pathName.endsWith("/")) {
+                                pathName += directoryName;
+                            } else {
+                                pathName += "/" + directoryName;
+                            }
+                            boolean done = ftpClient.makeDirectory(pathName);
+                            if (done) {
+                                System.out.println("创建目录成功");
+                            } else {
+                                System.out.println("创建目录失败");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("创建目录失败");
+                        }
+                        refreshRemoteFileList();
+                    });
                 });
                 tableMenu.getItems().addAll(menuItem1);
             }
