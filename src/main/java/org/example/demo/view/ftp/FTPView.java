@@ -53,14 +53,39 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     }
 
     public void initializeLocal() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         localBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5).subtract(10));
         localFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
 
         localFileListTableView.setRowFactory(tableView -> {
             TableRow<FileVO> row = new TableRow<>();
+
+            ContextMenu fileMenu = new ContextMenu();
+            {
+                MenuItem menuItem1 = new MenuItem("上传文件");
+                menuItem1.setOnAction((event) -> {
+                    System.out.println("上传文件" + row.getItem().getFilePath());
+                });
+                fileMenu.getItems().addAll(menuItem1);
+            }
+
+            ContextMenu directoryMenu = new ContextMenu();
+            {
+                MenuItem menuItem1 = new MenuItem("打开目录");
+                MenuItem menuItem2 = new MenuItem("上传目录");
+                menuItem1.setOnAction((event) -> {
+                    System.out.println("打开目录" + row.getItem().getFilePath());
+                });
+                menuItem2.setOnAction((event) -> {
+                    System.out.println("上传目录" + row.getItem().getFilePath());
+                });
+                directoryMenu.getItems().addAll(menuItem1, menuItem2);
+            }
+
             row.setOnMouseClicked(event -> {
+                fileMenu.hide();
+                directoryMenu.hide();
+
                 if (Objects.equals(event.getButton(), MouseButton.PRIMARY) && event.getClickCount() == 2) {
                     if (row.getItem() != null && row.getItem().getIsDirectory()) {
 
@@ -71,6 +96,16 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                         }
 
                         refreshLocalFileList();
+                    }
+                }
+
+                if (Objects.equals(event.getButton(), MouseButton.SECONDARY)) {
+                    if (row.getItem() != null) {
+                        if (row.getItem().getIsDirectory()) {
+                            directoryMenu.show(row, event.getScreenX(), event.getScreenY());
+                        } else {
+                            fileMenu.show(row, event.getScreenX(), event.getScreenY());
+                        }
                     }
                 }
             });
@@ -127,14 +162,61 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     }
 
     public void initializeRemote() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         remoteBox.prefWidthProperty().bind(DemoApplication.stage.widthProperty().multiply(0.5).subtract(10));
         remoteFileListBox.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.5));
 
         remoteFileListTableView.setRowFactory(tableView -> {
             TableRow<FileVO> row = new TableRow<>();
+
+            ContextMenu fileMenu = new ContextMenu();
+            {
+                MenuItem menuItem1 = new MenuItem("下载文件");
+                MenuItem menuItem2 = new MenuItem("删除文件");
+                MenuItem menuItem3 = new MenuItem("创建目录");
+                menuItem1.setOnAction((event) -> {
+                    System.out.println("下载文件" + row.getItem().getFilePath());
+                });
+                menuItem2.setOnAction((event) -> {
+                    System.out.println("删除文件" + row.getItem().getFilePath());
+                });
+                menuItem3.setOnAction((event) -> {
+                    System.out.println("创建目录");
+                });
+                fileMenu.getItems().addAll(menuItem1, menuItem2, menuItem3);
+            }
+
+            ContextMenu directoryMenu = new ContextMenu();
+            {
+                MenuItem menuItem1 = new MenuItem("下载目录");
+                MenuItem menuItem2 = new MenuItem("删除目录");
+                MenuItem menuItem3 = new MenuItem("创建目录");
+                menuItem1.setOnAction((event) -> {
+                    System.out.println("下载目录" + row.getItem().getFilePath());
+                });
+                menuItem2.setOnAction((event) -> {
+                    System.out.println("删除目录" + row.getItem().getFilePath());
+                });
+                menuItem3.setOnAction((event) -> {
+                    System.out.println("创建目录");
+                });
+                directoryMenu.getItems().addAll(menuItem1, menuItem2, menuItem3);
+            }
+
+            ContextMenu tableMenu = new ContextMenu();
+            {
+                MenuItem menuItem1 = new MenuItem("创建目录");
+                menuItem1.setOnAction((event) -> {
+                    System.out.println("创建目录");
+                });
+                tableMenu.getItems().addAll(menuItem1);
+            }
+
             row.setOnMouseClicked(event -> {
+                fileMenu.hide();
+                directoryMenu.hide();
+                tableMenu.hide();
+
                 if (Objects.equals(event.getButton(), MouseButton.PRIMARY) && event.getClickCount() == 2) {
                     if (row.getItem() != null && row.getItem().getIsDirectory()) {
 
@@ -145,6 +227,17 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                         }
 
                         refreshRemoteFileList();
+                    }
+                }
+                if (Objects.equals(event.getButton(), MouseButton.SECONDARY)) {
+                    if (row.getItem() != null) {
+                        if (row.getItem().getIsDirectory()) {
+                            directoryMenu.show(row, event.getScreenX(), event.getScreenY());
+                        } else {
+                            fileMenu.show(row, event.getScreenX(), event.getScreenY());
+                        }
+                    } else {
+                        tableMenu.show(row, event.getScreenX(), event.getScreenY());
                     }
                 }
             });
