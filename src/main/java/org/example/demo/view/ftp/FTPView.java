@@ -45,11 +45,14 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
     public FTPClient ftpClient;
 
+    public VBox bottomTabPane;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeFtpClient();
         initializeLocal();
         initializeRemote();
+        initializeBottom();
     }
 
     public void initializeLocal() {
@@ -301,6 +304,13 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             ftpClient.enterLocalPassiveMode();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void initializeBottom() {
+        bottomTabPane.prefHeightProperty().bind(DemoApplication.stage.heightProperty().multiply(0.35));
+        {
+
         }
     }
 

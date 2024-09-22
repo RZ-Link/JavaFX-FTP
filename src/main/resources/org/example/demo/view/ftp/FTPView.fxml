@@ -93,6 +93,35 @@
             </HBox>
         </VBox>
     </right>
+    <bottom>
+        <VBox fx:id="bottomTabPane">
+            <padding>
+                <Insets topRightBottomLeft="5"/>
+            </padding>
+            <TabPane tabClosingPolicy="UNAVAILABLE">
+                <Tab text="传输队列">
+                    <VBox>
+                        <TableView>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                            <columns>
+                                <TableColumn text="本地文件"/>
+                                <TableColumn text="方向"/>
+                                <TableColumn text="远程文件"/>
+                                <TableColumn text="大小"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+                <Tab text="日志">
+                    <VBox>
+
+                    </VBox>
+                </Tab>
+            </TabPane>
+        </VBox>
+    </bottom>
     <padding>
         <Insets topRightBottomLeft="5"/>
     </padding>
