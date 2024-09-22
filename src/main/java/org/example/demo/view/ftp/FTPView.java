@@ -70,23 +70,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                             localPathLabel.setText(localPathLabel.getText() + File.separator + row.getItem().getFileName());
                         }
 
-                        List<FileVO> fileVOList = new ArrayList<>();
-                        File directory = FileUtil.file(row.getItem().getFilePath());
-                        File[] files = directory.listFiles();
-                        if (files != null) {
-                            for (File file : files) {
-                                FileVO fileVO = new FileVO();
-                                fileVO.setFileName(file.getName());
-                                fileVO.setFilePath(file.getPath());
-                                if (!file.isDirectory()) {
-                                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
-                                }
-                                fileVO.setFileLastModifiedTime(sdf.format(new Date(file.lastModified())));
-                                fileVO.setIsDirectory(file.isDirectory());
-                                fileVOList.add(fileVO);
-                            }
-                        }
-                        localFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+                        refreshLocalFileList();
                     }
                 }
             });
@@ -139,25 +123,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
         localPathLabel.setText(FileUtil.getUserHomePath());
 
-        List<FileVO> fileVOList = new ArrayList<>();
-        try {
-            for (File file : FileUtil.ls(localPathLabel.getText())) {
-                FileVO fileVO = new FileVO();
-                fileVO.setFileName(file.getName());
-                fileVO.setFilePath(file.getPath());
-                if (!file.isDirectory()) {
-                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
-                }
-                fileVO.setFileLastModifiedTime(sdf.format(new Date(file.lastModified())));
-                fileVO.setIsDirectory(file.isDirectory());
-                fileVOList.add(fileVO);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        localFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
-
+        refreshLocalFileList();
     }
 
     public void initializeRemote() {
@@ -178,24 +144,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                             remotePathLabel.setText(remotePathLabel.getText() + "/" + row.getItem().getFileName());
                         }
 
-                        List<FileVO> fileVOList = new ArrayList<>();
-                        try {
-                            for (FTPFile file : ftpClient.mlistDir(remotePathLabel.getText())) {
-                                FileVO fileVO = new FileVO();
-                                fileVO.setFileName(file.getName());
-                                fileVO.setFilePath(remotePathLabel.getText() + file.getName());
-                                if (!file.isDirectory()) {
-                                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.getSize()));
-                                }
-                                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
-                                fileVO.setIsDirectory(file.isDirectory());
-                                fileVOList.add(fileVO);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+                        refreshRemoteFileList();
                     }
                 }
             });
@@ -248,25 +197,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
         remotePathLabel.setText("/");
 
-        List<FileVO> fileVOList = new ArrayList<>();
-        try {
-            for (FTPFile file : ftpClient.mlistDir(remotePathLabel.getText())) {
-                FileVO fileVO = new FileVO();
-                fileVO.setFileName(file.getName());
-                fileVO.setFilePath(remotePathLabel.getText() + file.getName());
-                if (!file.isDirectory()) {
-                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.getSize()));
-                }
-                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
-                fileVO.setIsDirectory(file.isDirectory());
-                fileVOList.add(fileVO);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
-
+        refreshRemoteFileList();
     }
 
     public void initializeFtpClient() {
@@ -286,6 +217,8 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             return;
         }
         localPathLabel.setText(localPath.getParent().toString());
+
+        refreshLocalFileList();
     }
 
     public void onRemoteBackButtonClick(ActionEvent actionEvent) {
@@ -294,5 +227,54 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
             return;
         }
         remotePathLabel.setText(remotePath.getParent().toString().replace(File.separator, "/"));
+
+        refreshRemoteFileList();
+    }
+
+    public void refreshLocalFileList() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        List<FileVO> fileVOList = new ArrayList<>();
+        try {
+            for (File file : FileUtil.ls(localPathLabel.getText())) {
+                FileVO fileVO = new FileVO();
+                fileVO.setFileName(file.getName());
+                fileVO.setFilePath(file.getPath());
+                if (!file.isDirectory()) {
+                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.length()));
+                }
+                fileVO.setFileLastModifiedTime(sdf.format(new Date(file.lastModified())));
+                fileVO.setIsDirectory(file.isDirectory());
+                fileVOList.add(fileVO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        localFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
+
+    }
+
+    public void refreshRemoteFileList() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        List<FileVO> fileVOList = new ArrayList<>();
+        try {
+            for (FTPFile file : ftpClient.mlistDir(remotePathLabel.getText())) {
+                FileVO fileVO = new FileVO();
+                fileVO.setFileName(file.getName());
+                fileVO.setFilePath(remotePathLabel.getText() + file.getName());
+                if (!file.isDirectory()) {
+                    fileVO.setFileSize(FileUtils.byteCountToDisplaySize(file.getSize()));
+                }
+                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
+                fileVO.setIsDirectory(file.isDirectory());
+                fileVOList.add(fileVO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        remoteFileListTableView.setItems(FXCollections.observableArrayList(fileVOList));
     }
 }
