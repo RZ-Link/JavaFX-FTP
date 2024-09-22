@@ -551,6 +551,8 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                                     }
 
                                     refreshLocalFileList();
+                                } else {
+                                    transferTaskVO.setStatus(TransferTaskVO.FAIL);
                                 }
 
                                 transferTaskQueue.remove(transferTaskVO);
