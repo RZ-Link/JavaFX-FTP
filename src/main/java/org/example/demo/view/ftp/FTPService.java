@@ -9,6 +9,7 @@ import org.apache.commons.net.ftp.FTPFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * https://commons.apache.org/proper/commons-net/examples/ftp/FTPClientExample.java
@@ -119,12 +120,12 @@ public class FTPService {
      * @param remoteFilePath 远程文件路径，例如/home/root/vsftpd-3.0.5.tar.gz
      * @return boolean
      */
-    public static boolean storeFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) {
+    public static boolean storeFile(FTPClient ftpClient, String localFilePath, String remoteFilePath, Consumer<Long> action) {
         try {
             if (ftpClient == null) {
                 return false;
             }
-            var inputStream = FileUtil.getInputStream(localFilePath);
+            var inputStream = new ProgressInputStream(FileUtil.getInputStream(localFilePath), action);
             boolean done = ftpClient.storeFile(remoteFilePath, inputStream);
             inputStream.close();
             return done;

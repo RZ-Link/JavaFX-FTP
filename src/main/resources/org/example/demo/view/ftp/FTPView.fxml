@@ -58,7 +58,7 @@
                     </columnResizePolicy>
                     <columns>
                         <TableColumn fx:id="localFileNameColumn" text="文件名"/>
-                        <TableColumn fx:id="localFileSizeColumn" text="文件大小"/>
+                        <TableColumn fx:id="localFileDisplaySizeColumn" text="文件大小"/>
                         <TableColumn fx:id="localFileLastModifiedTimeColumn" text="最后修改时间"/>
                     </columns>
                 </TableView>
@@ -86,7 +86,7 @@
                     </columnResizePolicy>
                     <columns>
                         <TableColumn fx:id="remoteFileNameColumn" text="文件名"/>
-                        <TableColumn fx:id="remoteFileSizeColumn" text="文件大小"/>
+                        <TableColumn fx:id="remoteFileDisplaySizeColumn" text="文件大小"/>
                         <TableColumn fx:id="remoteFileLastModifiedTimeColumn" text="最后修改时间"/>
                     </columns>
                 </TableView>
@@ -109,7 +109,7 @@
                                 <TableColumn fx:id="fileNameColumn" text="名称"/>
                                 <TableColumn fx:id="typeColumn" text="方向"/>
                                 <TableColumn fx:id="progressColumn" text="进度"/>
-                                <TableColumn fx:id="fileSizeColumn" text="大小"/>
+                                <TableColumn fx:id="fileDisplaySizeColumn" text="大小"/>
                                 <TableColumn fx:id="localFilePathColumn" text="本地文件"/>
                                 <TableColumn fx:id="remoteFilePathColumn" text="远程文件"/>
                             </columns>

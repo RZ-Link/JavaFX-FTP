@@ -15,8 +15,8 @@ public class TransferTaskVO {
 
     private String fileName;
     private String type;
-    private Long progress;
-    private String fileSize;
+    private Long fileByteCount;
+    private Long bytesTransferred;
     private String localFilePath;
     private String remoteFilePath;
     private Long status;

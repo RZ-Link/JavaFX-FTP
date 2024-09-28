@@ -6,7 +6,8 @@ import lombok.Data;
 public class FileVO {
     private String fileName;
     private String filePath;
-    private String fileSize;
+    private Long fileByteCount;
+    private String fileDisplaySize;
     private String fileLastModifiedTime;
     private Boolean isDirectory;
 }
