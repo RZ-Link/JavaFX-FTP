@@ -12,22 +12,22 @@
         <HBox alignment="CENTER_LEFT" spacing="10">
             <HBox alignment="CENTER_LEFT" spacing="2">
                 <Label text="主机:"/>
-                <TextField/>
+                <TextField fx:id="hostnameTextField"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="2">
                 <Label text="用户名:"/>
-                <TextField/>
+                <TextField fx:id="userTextField"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="2">
                 <Label text="密码:"/>
-                <TextField/>
+                <PasswordField fx:id="passwordTextField"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="2">
                 <Label text="端口:"/>
-                <TextField/>
+                <TextField fx:id="portTextField"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="2">
-                <Button text="连接"/>
+                <Button text="连接" onAction="#onConnectButtonClick"/>
             </HBox>
             <padding>
                 <Insets top="5" right="5" bottom="5" left="5"/>
@@ -121,11 +121,6 @@
                                 <TableColumn fx:id="remoteFilePathColumn" text="远程文件"/>
                             </columns>
                         </TableView>
-                    </VBox>
-                </Tab>
-                <Tab text="日志">
-                    <VBox>
-
                     </VBox>
                 </Tab>
             </TabPane>

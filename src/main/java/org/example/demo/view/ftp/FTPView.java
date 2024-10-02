@@ -39,6 +39,12 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 public class FTPView implements FxmlView<FTPViewModel>, Initializable {
+
+    public TextField hostnameTextField;
+    public TextField userTextField;
+    public PasswordField passwordTextField;
+    public TextField portTextField;
+
     public VBox localBox;
     public HBox localFileListBox;
     public Label localPathLabel; // 需要考虑兼容D:\和D:\JDK场景
@@ -343,7 +349,6 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         initializeRemoteColumn();
         // 远程站点数据初始化
         remotePathLabel.setText("/");
-        refreshRemoteFileList();
     }
 
     /**
@@ -664,7 +669,13 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
 
     public FTPClient connectAndLogin() {
-        return FTPService.connectAndLogin("192.168.153.130", 2121, "admin", "admin");
+        int port;
+        try {
+            port = Integer.parseInt(portTextField.getText());
+        } catch (Exception e) {
+            return null;
+        }
+        return FTPService.connectAndLogin(hostnameTextField.getText(), port, userTextField.getText(), passwordTextField.getText());
     }
 
     public void logoutAndDisconnect(FTPClient ftpClient) {
@@ -677,5 +688,13 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
     public void onRemoteReloadButtonClick(ActionEvent actionEvent) {
         refreshRemoteFileList();
+    }
+
+    public void onConnectButtonClick(ActionEvent actionEvent) {
+        FTPClient ftpClient = connectAndLogin();
+        if (ftpClient != null) {
+            refreshRemoteFileList();
+        }
+        logoutAndDisconnect(ftpClient);
     }
 }
