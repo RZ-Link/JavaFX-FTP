@@ -499,6 +499,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
 
                             var progressBar = new ProgressBar(getTableRow().getItem().getBytesTransferred().doubleValue() / getTableRow().getItem().getFileByteCount().doubleValue());
                             box.getChildren().add(progressBar);
+                            box.getChildren().add(new Label(Math.round(progressBar.getProgress() * 100) + "%"));
 
                             setGraphic(box);
                         }
@@ -547,7 +548,11 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                                 if (parentDirectory != null) {
                                     boolean done = FTPService.retrieveFile(ftpClient,
                                             transferTaskVO.getLocalFilePath(),
-                                            transferTaskVO.getRemoteFilePath());
+                                            transferTaskVO.getRemoteFilePath(),
+                                            totalBytesWrite -> {
+                                                transferTaskVO.setBytesTransferred(totalBytesWrite);
+                                                transferTaskQueueTableView.refresh();
+                                            });
                                     if (done) {
                                         transferTaskVO.setStatus(TransferTaskVO.SUCCESS);
                                     } else {
@@ -568,6 +573,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                         });
                     }
                 }
+                transferTaskQueueTableView.refresh();
             });
         }
     }

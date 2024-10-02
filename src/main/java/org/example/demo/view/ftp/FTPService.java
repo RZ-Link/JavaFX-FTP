@@ -29,8 +29,8 @@ public class FTPService {
         try {
             FTPClient ftpClient = new FTPClient();
             ftpClient.setControlEncoding("UTF-8");
-            ftpClient.connect("192.168.153.130", 2121);
-            boolean done = ftpClient.login("admin", "admin");
+            ftpClient.connect(hostname, port);
+            boolean done = ftpClient.login(user, password);
             if (!done) {
                 return null;
             }
@@ -118,6 +118,7 @@ public class FTPService {
      * @param ftpClient      FTPClient
      * @param localFilePath  本地文件路径，例如D:\vsftpd-3.0.5.tar.gz或者/home/root/vsftpd-3.0.5.tar.gz
      * @param remoteFilePath 远程文件路径，例如/home/root/vsftpd-3.0.5.tar.gz
+     * @param action         更新action
      * @return boolean
      */
     public static boolean storeFile(FTPClient ftpClient, String localFilePath, String remoteFilePath, Consumer<Long> action) {
@@ -141,14 +142,15 @@ public class FTPService {
      * @param ftpClient      FTPClient
      * @param localFilePath  本地文件路径，例如D:\vsftpd-3.0.5.tar.gz或者/home/root/vsftpd-3.0.5.tar.gz
      * @param remoteFilePath 远程文件路径，例如/home/root/vsftpd-3.0.5.tar.gz
+     * @param action         更新action
      * @return boolean
      */
-    public static boolean retrieveFile(FTPClient ftpClient, String localFilePath, String remoteFilePath) {
+    public static boolean retrieveFile(FTPClient ftpClient, String localFilePath, String remoteFilePath, Consumer<Long> action) {
         try {
             if (ftpClient == null) {
                 return false;
             }
-            var outputStream = FileUtil.getOutputStream(localFilePath);
+            var outputStream = new ProgressOutputStream(FileUtil.getOutputStream(localFilePath), action);
             boolean done = ftpClient.retrieveFile(remoteFilePath, outputStream);
             outputStream.close();
             return done;
