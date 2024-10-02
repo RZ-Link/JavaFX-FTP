@@ -670,4 +670,12 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public void logoutAndDisconnect(FTPClient ftpClient) {
         FTPService.logoutAndDisconnect(ftpClient);
     }
+
+    public void onLocalReloadButtonClick(ActionEvent actionEvent) {
+        refreshLocalFileList();
+    }
+
+    public void onRemoteReloadButtonClick(ActionEvent actionEvent) {
+        refreshRemoteFileList();
+    }
 }

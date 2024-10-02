@@ -46,6 +46,11 @@
                         <FontIcon iconLiteral="fth-arrow-left-circle"/>
                     </graphic>
                 </Button>
+                <Button styleClass="small" onAction="#onLocalReloadButtonClick">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-rotate-cw"/>
+                    </graphic>
+                </Button>
                 <Label fx:id="localPathLabel"/>
             </HBox>
             <HBox fx:id="localFileListBox">
@@ -72,6 +77,11 @@
                 <Button styleClass="small" onAction="#onRemoteBackButtonClick">
                     <graphic>
                         <FontIcon iconLiteral="fth-arrow-left-circle"/>
+                    </graphic>
+                </Button>
+                <Button styleClass="small" onAction="#onRemoteReloadButtonClick">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-rotate-cw"/>
                     </graphic>
                 </Button>
                 <Label fx:id="remotePathLabel"/>
