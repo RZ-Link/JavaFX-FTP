@@ -428,7 +428,6 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                                     try {
                                         imageView.setImage(new Image("/org/example/demo/image/mimetypes/" + mimeType));
                                     } catch (Exception e) {
-                                        e.printStackTrace();
                                         imageView.setImage(new Image("/org/example/demo/image/mimetypes/text-plain.png"));
                                     }
                                 }
@@ -642,7 +641,7 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
         List<FileVO> fileVOList = new ArrayList<>();
 
         var ftpClient = connectAndLogin();
-        var files = FTPService.mlistDir(ftpClient, remotePathLabel.getText());
+        var files = FTPService.listFiles(ftpClient, remotePathLabel.getText());
         logoutAndDisconnect(ftpClient);
 
         if (files != null) {
@@ -658,7 +657,9 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                     fileVO.setFileByteCount(file.getSize());
                     fileVO.setFileDisplaySize(FileUtils.byteCountToDisplaySize(file.getSize()));
                 }
-                fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
+                if (file.getTimestamp() != null) {
+                    fileVO.setFileLastModifiedTime(sdf.format(file.getTimestamp().getTime()));
+                }
                 fileVO.setIsDirectory(file.isDirectory());
                 fileVOList.add(fileVO);
             }

@@ -1,10 +1,13 @@
 package org.example.demo.view.ftp;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.StrUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.util.ArrayList;
@@ -167,12 +170,17 @@ public class FTPService {
      * @param remoteDirectoryPath 远程目录路径，例如/home/root
      * @return boolean
      */
-    public static FTPFile[] mlistDir(FTPClient ftpClient, String remoteDirectoryPath) {
+    public static FTPFile[] listFiles(FTPClient ftpClient, String remoteDirectoryPath) {
         try {
             if (ftpClient == null) {
                 return null;
             }
-            return ftpClient.mlistDir(remoteDirectoryPath);
+            FTPFile[] files = ftpClient.listFiles(remoteDirectoryPath);
+            for (FTPFile file : files) {
+                String path = remoteDirectoryPath.endsWith("/") ? remoteDirectoryPath + file.getName() : remoteDirectoryPath + "/" + file.getName();
+                file.setTimestamp(ftpClient.mdtmCalendar(path));
+            }
+            return files;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -227,7 +235,7 @@ public class FTPService {
                 return null;
             }
             List<Pair<FTPFile, String>> result = new ArrayList<>();
-            for (FTPFile file : ftpClient.mlistDir(remoteDirectoryPath)) {
+            for (FTPFile file : ftpClient.listFiles(remoteDirectoryPath)) {
                 String pathName = remoteDirectoryPath + "/" + file.getName();
 
                 if (file.isDirectory()) {
