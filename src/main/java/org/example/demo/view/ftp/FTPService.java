@@ -40,9 +40,24 @@ public class FTPService {
             ftpClient.enterLocalPassiveMode();
             return ftpClient;
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+
         }
+
+        try {
+            FTPClient ftpClient = new FTPClient();
+            ftpClient.setControlEncoding("UTF-8");
+            ftpClient.connect(hostname, port);
+            boolean done = ftpClient.login(user, password);
+            if (!done) {
+                return null;
+            }
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            ftpClient.enterLocalPassiveMode();
+            return ftpClient;
+        } catch (Exception e) {
+
+        }
+        return null;
     }
 
     /**
