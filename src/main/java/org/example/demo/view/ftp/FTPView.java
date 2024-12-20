@@ -2,8 +2,6 @@ package org.example.demo.view.ftp;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Pair;
-import cn.hutool.core.math.MathUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import de.saxsys.mvvmfx.FxmlView;
 import javafx.application.Platform;
@@ -577,7 +575,9 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
                         });
                     }
                 }
-                transferTaskQueueTableView.refresh();
+                Platform.runLater(() -> {
+                    transferTaskQueueTableView.refresh();
+                });
             });
         }
     }
