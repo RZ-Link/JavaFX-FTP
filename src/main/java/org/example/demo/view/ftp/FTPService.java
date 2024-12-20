@@ -1,14 +1,12 @@
 package org.example.demo.view.ftp;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.StrUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPSClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ public class FTPService {
      */
     public static FTPClient connectAndLogin(String hostname, Integer port, String user, String password) {
         try {
-            FTPClient ftpClient = new FTPClient();
+            FTPSClient ftpClient = new FTPSClient();
             ftpClient.setControlEncoding("UTF-8");
             ftpClient.connect(hostname, port);
             boolean done = ftpClient.login(user, password);
@@ -38,6 +36,7 @@ public class FTPService {
                 return null;
             }
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            ftpClient.execPROT("P");
             ftpClient.enterLocalPassiveMode();
             return ftpClient;
         } catch (Exception e) {
