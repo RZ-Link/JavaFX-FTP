@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.example.demo.DemoApplication;
+import org.example.demo.view.feedback.MessageUtils;
 import org.example.demo.view.feedback.PromptDialog;
 
 import java.io.File;
@@ -694,7 +695,10 @@ public class FTPView implements FxmlView<FTPViewModel>, Initializable {
     public void onConnectButtonClick(ActionEvent actionEvent) {
         FTPClient ftpClient = connectAndLogin();
         if (ftpClient != null) {
+            MessageUtils.success("连接成功");
             refreshRemoteFileList();
+        } else {
+            MessageUtils.error("连接失败");
         }
         logoutAndDisconnect(ftpClient);
     }
